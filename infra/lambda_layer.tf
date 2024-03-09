@@ -1,15 +1,15 @@
 locals {
-  requirments_path = "../app/requirements.txt"
+  requirements_path = "${local.source_code_path}/requirements.txt"
 }
 
 
 resource "null_resource" "pip_install" {
   triggers = {
-    shell_hash = "${sha256(file(${local.requirments_path}))}"
+    shell_hash = "${sha256(file(local.requirements_path))}"
   }
 
   provisioner "local-exec" {
-    command = "python -m pip install -r ${local.requirments_path} --platform manylinux2014_x86_64 -t ${path.module}/layer/python --only-binary=:all:"
+    command = "python -m pip install -r ${local.requirements_path} --platform manylinux2014_x86_64 -t ${path.module}/layer/python --only-binary=:all:"
   }
 }
 

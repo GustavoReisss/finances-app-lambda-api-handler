@@ -1,5 +1,5 @@
 resource "aws_iam_role" "lambda_api_handler_role" {
-  name                = "lambda-api-handler-role"
+  name_prefix                = "lambda-api-handler-role"
   # assume_role_policy  = data.aws_iam_policy_document.instance_assume_role_policy.json # (not shown)
  
   managed_policy_arns = [
@@ -22,7 +22,7 @@ resource "aws_iam_role" "lambda_api_handler_role" {
 }
 
 resource "aws_iam_policy" "dynamo_policy" {
-  name        = "dynamo-policy"
+  name_prefix        = "dynamo-policy"
   path        = "/"
   description = "Grant access to dynamo tables"
 
