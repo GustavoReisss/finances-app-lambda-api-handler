@@ -1,5 +1,7 @@
 from .base_table_model import TableModel
 
 class TipoPagamentoModel(TableModel):
-    UserId: str
-    TipoPagamentoId: str
+    userId: str
+    tipoPagamentoId: str
+    descricao: str
+    categoriasPagamentos: list[str] = []

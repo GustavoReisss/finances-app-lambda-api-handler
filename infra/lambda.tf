@@ -1,5 +1,5 @@
-resource "aws_lambda_function" "lambda" {
-  function_name    = "lambda-api-handler"
+resource "aws_lambda_function" "lambda_api_handler" {
+  function_name    = var.lambda_name
   handler          = "lambda_function.lambda_handler"
   runtime          = "python3.11"
   filename         = data.archive_file.code.output_path
@@ -7,7 +7,7 @@ resource "aws_lambda_function" "lambda" {
   role             = aws_iam_role.lambda_api_handler_role.arn
   layers           = [aws_lambda_layer_version.dynamo_api_handler_layer.arn]
   timeout          = 29
-  
+
   environment {
     variables = {
       "ENV" = "dev"
@@ -18,5 +18,6 @@ resource "aws_lambda_function" "lambda" {
 data "archive_file" "code" {
   type        = "zip"
   source_dir  = "${local.source_code_path}"
+  excludes    = ["venv"]
   output_path = "${path.module}/code.zip"
 }

@@ -1,62 +1,70 @@
 import json
-import traceback
-from Utils.Factories.repository_factory import get_repository
-from pydantic import ValidationError
-from aws_lambda_powertools.event_handler import ApiGatewayResolver
-from aws_lambda_powertools.event_handler.exceptions import BadRequestError, InternalServerError
+from Utils.Factories.service_factory import ServiceFactory
+from Utils.get_user_info import get_user_info
+from aws_lambda_powertools.event_handler import APIGatewayHttpResolver, CORSConfig
+from aws_lambda_powertools.event_handler.api_gateway import Router
 
-api_gateway_resolver = ApiGatewayResolver()
 
-@api_gateway_resolver.get("/<endpoint>")
-def get(endpoint):    
-    return get_repository(endpoint).get_all()
+cors_config = CORSConfig(allow_credentials=True)
+resolver = APIGatewayHttpResolver(cors=cors_config)
 
-@api_gateway_resolver.get("/<endpoint>/<partition_key>")
-@api_gateway_resolver.get("/<endpoint>/<partition_key>/<sort_key>")
-def get_by_pk_or_sk(endpoint, partition_key="", sort_key=""):
-    return get_repository(endpoint).get_by_pk(pk=partition_key, sk=sort_key)
+router = Router()
 
-@api_gateway_resolver.post("/<endpoint>")
+
+@router.get("/<endpoint>")
+def get(endpoint):
+    user_info = router.context.get("user")
+    return ServiceFactory.create_service(endpoint=endpoint, user_info=user_info).get()
+
+
+@router.get("/<endpoint>/<first_arg>")
+@router.get("/<endpoint>/<first_arg>/<second_arg>")
+def get_by_pk_or_sk(endpoint, first_arg="", second_arg=""):
+    user_info = router.context.get("user")
+
+    return ServiceFactory.create_service(
+        endpoint=endpoint, user_info=user_info
+    ).get_by_pk_or_sk(first_arg=first_arg, second_arg=second_arg)
+
+
+@router.post("/<endpoint>")
 def post(endpoint):
-    body = api_gateway_resolver.current_event.body
-    
-    try:
-        return get_repository(endpoint).create_item(body)
-    
-    except ValidationError as err:
-        raise BadRequestError(str(err))
-    
-    except Exception as err:
-        raise InternalServerError("Internal Server Error")
+    body = resolver.current_event.body
+    user_info = router.context.get("user")
 
-@api_gateway_resolver.put("/<endpoint>/<partition_key>")
-@api_gateway_resolver.put("/<endpoint>/<partition_key>/<sort_key>")
-def put(endpoint, partition_key="", sort_key=""):
-    body = api_gateway_resolver.current_event.body
-    
-    try:
-        return get_repository(endpoint).update_item(pk=partition_key, sk=sort_key, new_values=body)
-    
-    except (ValidationError, ValueError) as err:
-        raise BadRequestError(str(err))
-    
-    except Exception as err:
-        print(err, traceback.format_exc())
-        raise InternalServerError("Internal Server Error")
+    return ServiceFactory.create_service(endpoint=endpoint, user_info=user_info).post(
+        body
+    )
 
 
-@api_gateway_resolver.delete("/<endpoint>/<partition_key>")
-@api_gateway_resolver.delete("/<endpoint>/<partition_key>/<sort_key>")
-def delete(endpoint, partition_key="", sort_key=""):
-    return get_repository(endpoint).delete_item(pk=partition_key, sk=sort_key)
+@router.put("/<endpoint>/<first_arg>")
+@router.put("/<endpoint>/<first_arg>/<second_arg>")
+def put(endpoint, first_arg="", second_arg=""):
+    body = resolver.current_event.body
+    user_info = router.context.get("user")
+
+    return ServiceFactory.create_service(endpoint=endpoint, user_info=user_info).put(
+        body=body, first_arg=first_arg, second_arg=second_arg
+    )
 
 
-def lambda_handler(event, context = None):
-    # return api_gateway_resolver.resolve(event, context)
+@router.delete("/<endpoint>/<first_arg>")
+@router.delete("/<endpoint>/<first_arg>/<second_arg>")
+def delete(endpoint, first_arg="", second_arg=""):
+    user_info = router.context.get("user")
 
-    response = api_gateway_resolver.resolve(event, context)
-    
-    if "body" in response:
-        response["body"] = json.loads(response["body"])
+    return ServiceFactory.create_service(endpoint=endpoint, user_info=user_info).delete(
+        first_arg=first_arg, second_arg=second_arg
+    )
 
-    return response
+
+resolver.include_router(router, prefix="")
+
+
+def lambda_handler(event, context=None):
+    resolver.append_context(user=get_user_info(event))
+
+    if "body" in event and type(event["body"]) is str:
+        event["body"] = json.loads(event["body"])
+
+    return resolver.resolve(event, context)

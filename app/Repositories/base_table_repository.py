@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from Entities.Tables.base_table import Table
 from env.ddb_client import get_ddb_client
 from boto3.dynamodb.conditions import Key
-from pydantic import ValidationError
 
 @dataclass
 class TableRepository:
@@ -37,8 +36,8 @@ class TableRepository:
         
         self.__dynamo_table.put_item(Item=item)
 
-        pk = body[self.table.partition_key]
-        sk = "" if not self.table.sort_key else body[self.table.sort_key]
+        pk = item[self.table.partition_key]
+        sk = "" if not self.table.sort_key else item[self.table.sort_key]
 
         return self.get_by_pk(pk, sk)
     
@@ -68,9 +67,9 @@ class TableRepository:
         ):
 
             raise ValueError(
-                f"the value of partition_key {self.table.partition_key}"
+                f"the value of partition_key '{self.table.partition_key}'"
                 f"{' or sort_key ' + self.table.sort_key if self.table.sort_key else ''} "
-                f"in the body is different from partition_key {pk}"
+                f"in the body is different from partition_key '{pk}'"
                 f"{' or sort_key ' + sk if self.table.sort_key else ''} "
                 "present in request path"
             )

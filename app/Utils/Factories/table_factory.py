@@ -1,10 +1,15 @@
-from Entities.Tables.user_table import UserTable
 from Entities.Tables.tipo_pagamento_table import TipoPagamentoTable
+from Entities.Tables.despesa_table import DespesaTable
+from Utils.enums.endpoints import EndpointsEnum
 
-def get_table(endpoint: str):
-    tables = {
-        "user": UserTable,
-        "tipoPagamento": TipoPagamentoTable
-    }
 
-    return tables[endpoint]()
+class TableFactory:
+
+    @staticmethod
+    def create_table(endpoint: EndpointsEnum):
+        tables = {
+            EndpointsEnum.TIPOS_PAGAMENTOS: TipoPagamentoTable,
+            EndpointsEnum.DESPESAS: DespesaTable,
+        }
+
+        return tables[endpoint]()

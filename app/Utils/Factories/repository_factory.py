@@ -1,16 +1,24 @@
 from Repositories.base_table_repository import TableRepository
-from .table_factory import get_table
+from .table_factory import TableFactory
 from aws_lambda_powertools.event_handler.exceptions import NotFoundError
+from Utils.enums.endpoints import EndpointsEnum
 
 
-def get_repository(endpoint: str):
-    mapped_repositores: dict[str, TableRepository] = {}
+class RepositoryFactory:
 
-    try:
-        table = get_table(endpoint)
-    except KeyError:
-        raise NotFoundError
-    
-    repository = mapped_repositores.get(endpoint, TableRepository)(table=table)
-    
-    return repository
+    @staticmethod
+    def create_repository(endpoint: str | EndpointsEnum):
+        # use to map endpoints that have custom repositories
+        custom_repositories: dict[EndpointsEnum, TableRepository] = {}
+
+        try:
+            endpoint = EndpointsEnum(endpoint)
+
+            table = TableFactory.create_table(endpoint)
+        except (KeyError, ValueError) as err:
+            print(err)
+            raise NotFoundError
+
+        repository = custom_repositories.get(endpoint, TableRepository)(table=table)
+
+        return repository

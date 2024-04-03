@@ -1,5 +1,5 @@
 resource "aws_iam_role" "lambda_api_handler_role" {
-  name_prefix                = "lambda-api-handler-role"
+  name                = "lambda-api-handler-role"
   # assume_role_policy  = data.aws_iam_policy_document.instance_assume_role_policy.json # (not shown)
  
   managed_policy_arns = [
@@ -22,7 +22,7 @@ resource "aws_iam_role" "lambda_api_handler_role" {
 }
 
 resource "aws_iam_policy" "dynamo_policy" {
-  name_prefix        = "dynamo-policy"
+  name        = "dynamo-policy"
   path        = "/"
   description = "Grant access to dynamo tables"
 
@@ -42,6 +42,21 @@ resource "aws_iam_policy" "dynamo_policy" {
         ]
         Effect   = "Allow"
         Resource = "*"
+      },
+      {
+        Action = [
+          "logs:CreateLogGroup"
+        ]
+        Effect   = "Allow"
+        Resource = "arn:aws:logs:sa-east-1:${data.aws_caller_identity.current.account_id}:*"
+      },
+      {
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Effect   = "Allow"
+        Resource = "arn:aws:logs:sa-east-1:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${var.lambda_name}:*"
       },
     ]
   })
