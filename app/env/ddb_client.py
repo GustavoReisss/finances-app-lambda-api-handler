@@ -3,25 +3,23 @@ import os
 
 __ddb_client = None
 
-env = os.getenv("ENV", "local")
+env = os.getenv("ENV", "dev")
+
 
 def setup_dynamodb_client():
     global __ddb_client
 
-    params = {}
+    params = {"region_name": "sa-east-1"}
 
     if env == "local":
         params = {
             "endpoint_url": "http://localhost:8000",
             "region_name": "dummy",
             "aws_access_key_id": "dummy",
-            "aws_secret_access_key": "dummy"
+            "aws_secret_access_key": "dummy",
         }
 
-    __ddb_client = boto3.resource(
-        "dynamodb",
-        **params
-    )
+    __ddb_client = boto3.resource("dynamodb", **params)
 
 
 def get_ddb_client():

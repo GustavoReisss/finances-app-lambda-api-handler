@@ -24,7 +24,7 @@ def make_api_gateway_event():
                     "email": "generic_user@email.com",
                     "expireOn": 1234567890,
                     "sessionId": "session_hash",
-                    "userId": "2",
+                    "userId": "Gustavo",
                 }
             },
             "stage": STAGE,
