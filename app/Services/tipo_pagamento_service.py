@@ -28,5 +28,11 @@ class TiposPagamentosService(GenericService):
             for tipo_pagamento in default_tipo_pagamentos
         ]
 
-    def put(self, body, first_arg, second_arg=""):
+    def put(self, body, first_arg, **kwargs):
         return super().put(body, self.user_id, first_arg)
+
+    def delete(self, first_arg, **kwargs):
+        """
+        first_arg == tipo_pagamento_id
+        """
+        return super().delete(first_arg=self.user_id, second_arg=first_arg)
