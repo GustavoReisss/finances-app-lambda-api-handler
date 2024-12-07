@@ -24,6 +24,7 @@ class DespesaModel(TableModel):
     ultimoPagamento: str
     descricao: str
     valor: Decimal
+    dataProximoPagamento: str = ""
 
     @model_validator(mode="before")
     def validate_tipo_pagamento_extra_fields(cls, data):
