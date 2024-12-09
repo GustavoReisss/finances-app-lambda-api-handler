@@ -5,7 +5,7 @@ import uuid
 
 class DespesasService(GenericService):
 
-    def get(self):
+    def get(self, *args, **kwargs):
         return super().get_by_pk_or_sk(first_arg=self.user_request_info.userId)
 
     def post(self, body: dict):

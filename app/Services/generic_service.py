@@ -1,4 +1,5 @@
 import traceback
+import json
 from pydantic import BaseModel
 from Repositories.base_table_repository import TableRepository
 from Entities.Utils.user_request_info import UserRequestInfo
@@ -17,8 +18,25 @@ class GenericService(BaseModel):
     def user_id(self):
         return self.user_request_info.userId
 
-    def get(self):
-        return self.table_repository.get_all()
+    def get(self, query_params=None):
+        limit = query_params.pop("limit", None)
+        last_returned_keys = query_params.pop("lastReturnedKeys", None)
+
+        if last_returned_keys:
+            try:
+                last_returned_keys = json.loads(last_returned_keys)
+
+                if type(last_returned_keys) != dict:
+                    raise TypeError("last_returned_keys should be a dict")
+
+            except (json.JSONDecodeError, TypeError) as err:
+                raise BadRequestError(
+                    msg=f"last_returned_keys is invalid, should be a dict but received: {str(last_returned_keys)}"
+                )
+
+        return self.table_repository.get_all(
+            filters=query_params, limit=limit, last_returned_keys=last_returned_keys
+        )
 
     def get_by_pk_or_sk(self, first_arg, second_arg=""):
         return self.table_repository.get_by_pk(pk=first_arg, sk=second_arg)

@@ -14,7 +14,11 @@ router = Router()
 @router.get("/<endpoint>")
 def get(endpoint):
     user_info = router.context.get("user")
-    return ServiceFactory.create_service(endpoint=endpoint, user_info=user_info).get()
+    query_params = resolver.current_event.query_string_parameters
+
+    return ServiceFactory.create_service(endpoint=endpoint, user_info=user_info).get(
+        query_params=query_params
+    )
 
 
 @router.get("/<endpoint>/<first_arg>")

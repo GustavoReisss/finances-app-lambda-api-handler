@@ -4,7 +4,7 @@ import uuid
 
 class TiposPagamentosService(GenericService):
 
-    def get(self):
+    def get(self, *args, **kwargs):
         tipos_pagamentos: list = super().get_by_pk_or_sk(first_arg=self.user_id)
 
         if len(tipos_pagamentos) == 0:

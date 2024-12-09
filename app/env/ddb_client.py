@@ -3,7 +3,7 @@ import os
 
 __ddb_client = None
 
-env = os.getenv("ENV", "local")
+env = os.getenv("ENV", "dev")
 
 
 def setup_dynamodb_client():

@@ -4,6 +4,7 @@ from enum import Enum, auto
 class EndpointsEnum(Enum):
     TIPOS_PAGAMENTOS = "tipos_pagamentos"
     DESPESAS = "despesas"
+    ROTAS = "rotas"
 
 
 if __name__ == "__main__":

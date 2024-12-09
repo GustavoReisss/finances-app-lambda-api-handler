@@ -2,3 +2,4 @@
 boto3
 pydantic
 aws-lambda-powertools
+types-boto3[essential]
