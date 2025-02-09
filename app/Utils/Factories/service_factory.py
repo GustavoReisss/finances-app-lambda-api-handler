@@ -1,6 +1,8 @@
 from Services.generic_service import GenericService
 from Services.tipo_pagamento_service import TiposPagamentosService
 from Services.despesas_service import DespesasService
+from Services.extrato_despesas_service import ExtratoDespesasService
+from Services.ativo_service import AtivosServicee
 from .repository_factory import RepositoryFactory
 from aws_lambda_powertools.event_handler.exceptions import NotFoundError
 from Utils.enums.endpoints import EndpointsEnum
@@ -15,6 +17,8 @@ class ServiceFactory:
         custom_services: dict[EndpointsEnum, GenericService] = {
             EndpointsEnum.TIPOS_PAGAMENTOS: TiposPagamentosService,
             EndpointsEnum.DESPESAS: DespesasService,
+            EndpointsEnum.ATIVOS: AtivosServicee,
+            EndpointsEnum.EXTRATO_DESPESAS: ExtratoDespesasService,
         }
 
         try:

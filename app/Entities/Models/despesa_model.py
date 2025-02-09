@@ -21,7 +21,6 @@ class DespesaModel(TableModel):
     despesaId: str
     tipoPagamento: TipoPagamentoEnum
     categoriaPagamento: str
-    ultimoPagamento: str
     descricao: str
     valor: Decimal
     dataProximoPagamento: str = ""

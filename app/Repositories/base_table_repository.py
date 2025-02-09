@@ -2,6 +2,15 @@ from dataclasses import dataclass
 from Entities.Tables.base_table import Table
 from env.ddb_client import get_ddb_client
 from boto3.dynamodb.conditions import Key, Attr
+from enum import Enum
+
+
+class Operators(str, Enum):
+    eq = "eq"
+    lt = "lt"
+    lte = "lte"
+    gt = "gt"
+    gte = "gte"
 
 
 @dataclass
@@ -19,8 +28,8 @@ class TableRepository:
         filters = [Attr(key).eq(value) for key, value in filters.items()]
         filter_expression = filters[0]
 
-        for filter in filters[1:]:
-            filter_expression = filter_expression & filter
+        for _filter in filters[1:]:
+            filter_expression = filter_expression & _filter
 
         return filter_expression
 
@@ -45,16 +54,42 @@ class TableRepository:
 
         return {
             "items": scan_response.get("Items", []),
-            "lastReturnedKeys": scan_response.get("LastEvaluatedKey", {}),
+            "lastEvaluatedKey": scan_response.get("LastEvaluatedKey", {}),
         }
 
-    def get_by_pk(self, pk, sk=""):
-        filters = Key(self.table.partition_key).eq(pk)
+    def get_by_pk(
+        self,
+        pk,
+        sk="",
+        index_name="",
+        order_by="asc",
+        sk_filter_operator: Operators = "eq",
+    ):
 
-        if sk and self.table.sort_key:
-            filters = filters & Key(self.table.sort_key).eq(sk)
+        if index_name and index_name not in self.table.secondary_indexes:
+            raise Exception(
+                f"Given index '{index_name}' is not a valid secondary index for table '{self.table.name}'"
+            )
 
-        query = self.__dynamo_table.query(KeyConditionExpression=filters)
+        params = {}
+
+        index_config = self.table
+
+        if index_name:
+            params["IndexName"] = index_name
+            index_config = self.table.secondary_indexes[index_name]
+
+        params["KeyConditionExpression"] = Key(index_config.partition_key).eq(pk)
+
+        if sk and index_config.sort_key:
+            params["KeyConditionExpression"] = params[
+                "KeyConditionExpression"
+            ] & getattr(Key(index_config.sort_key), sk_filter_operator)(sk)
+
+        if order_by and order_by.lower() in ["asc", "desc"]:
+            params["ScanIndexForward"] = order_by.lower() == "asc"
+
+        query = self.__dynamo_table.query(**params)
 
         return query["Items"]
 

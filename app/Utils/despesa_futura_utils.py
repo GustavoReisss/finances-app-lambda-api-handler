@@ -82,7 +82,7 @@ __handlers = {
 
 def gera_data_proxima_despesa(
     data_despesa_atual: date | str | None, frequencia: str, detalhes_frequencia: dict
-):
+) -> date:
     if (
         data_despesa_atual and type(data_despesa_atual) is str
     ):  # Cenário onde a despesa possui ultima data de pagamento (no dynamoDB), devemos conferir se a mesma não está dentro do periodo solicitado

@@ -1,6 +1,9 @@
 from .generic_service import GenericService
-from Utils.make_data_despesa import gera_data_proximo_pagamento
+
+# from Utils.make_data_despesa import gera_data_proximo_pagamento
 import uuid
+
+from Utils.despesa_futura_utils import gera_data_proxima_despesa, TODAY
 
 
 class DespesasService(GenericService):
@@ -36,11 +39,21 @@ class DespesasService(GenericService):
         return body
 
     def __get_data_proximo_pagamento(self, body: dict):
-        if body.get("tipoPagamento") == "À Vista":
-            return body.get("dataProximoPagamento")
+        dataProximoPagamento = body.get("dataProximoPagamento")
 
-        return gera_data_proximo_pagamento(
-            body.get("ultimoPagamento"),
-            body.get("frequencia"),
-            body.get("detalhesFrequencia"),
+        frequencia = body.get("frequencia")
+        tipoPagamento = body.get("tipoPagamento")
+
+        if dataProximoPagamento and (
+            tipoPagamento == "À Vista" or frequencia == "Outro"
+        ):
+            return dataProximoPagamento
+
+        if not frequencia:
+            return TODAY.strftime("%Y-%m-%d")
+
+        return gera_data_proxima_despesa(
+            data_despesa_atual=None,
+            frequencia=frequencia,
+            detalhes_frequencia=body.get("detalhesFrequencia"),
         ).strftime("%Y-%m-%d")
