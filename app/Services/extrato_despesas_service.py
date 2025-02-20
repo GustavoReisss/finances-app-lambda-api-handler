@@ -1,4 +1,5 @@
 from .generic_service import GenericService
+import uuid
 
 
 class ExtratoDespesasService(GenericService):
@@ -18,4 +19,22 @@ class ExtratoDespesasService(GenericService):
             index_name="dataPagamentoIndex",
             order_by=order,
             sk_filter_operator="lte",
+        )
+
+    def delete(self, *args, **kwargs):
+        return self.table_repository.delete_item(
+            pk=self.user_request_info.userId, sk=kwargs["first_arg"]
+        )
+
+    def post(self, body):
+        body["userId"] = self.user_request_info.userId
+        body["despesaId"] = str(uuid.uuid4())
+
+        return self.table_repository.create_item(body=body)
+
+    def put(self, body, **kwargs):
+        return super().put(
+            body=body,
+            first_arg=self.user_request_info.userId,
+            second_arg=kwargs["first_arg"],
         )

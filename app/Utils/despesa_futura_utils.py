@@ -30,47 +30,40 @@ def gera_data(ano: int, mes: int, dia: int):
         return primeiro_dia_do_proximo_mes - relativedelta(days=1)
 
 
-def getFirstWeekDayOfTheMonth(year, month, weekday: int | WeekdayEnum):
-    first_day_of_the_month = date(year, month, 7)
-    return first_day_of_the_month - relativedelta(
-        days=(first_day_of_the_month.weekday() - WeekdayEnum(weekday).value) % 7
-    )
-
-
 TODAY = date.today()
 
 
-def __gera_data_mensal(data_atual: date, detalhes_frequencia: dict):
-    if not data_atual:
-        return gera_data(
-            TODAY.year, TODAY.month, int(detalhes_frequencia["diaPagamento"])
-        )
+def __gera_data_mensal(detalhes_frequencia: dict):
+    dia_pagamento = int(detalhes_frequencia["diaPagamento"])
 
-    data_apos_um_mes = data_atual + relativedelta(months=1)
-    return gera_data(
-        data_apos_um_mes.year,
-        data_apos_um_mes.month,
-        int(detalhes_frequencia["diaPagamento"]),
-    )  # Garante que será o dia selecionado ou o ultimo dia do mês
+    data_atual = TODAY
+
+    if data_atual.day > dia_pagamento:
+        data_atual = data_atual + relativedelta(months=1)
+
+    return gera_data(data_atual.year, data_atual.month, int(dia_pagamento))
 
 
-def __gera_data_semanal(data_atual: date, detalhes_frequencia: dict):
-    if not data_atual:
-        return getFirstWeekDayOfTheMonth(
-            TODAY.year, TODAY.month, int(detalhes_frequencia["diaSemana"])
-        )
+def __gera_data_semanal(detalhes_frequencia: dict):
+    data_atual = TODAY
+
+    if data_atual.weekday() == int(detalhes_frequencia["diaSemana"]):
+        return data_atual
+
+    while data_atual.weekday() != int(detalhes_frequencia["diaSemana"]):
+        data_atual -= relativedelta(days=1)
 
     return data_atual + relativedelta(weeks=1)
 
 
-def __gera_data_outras_frequencias(data_atual: date, detalhes_frequencia: dict):
+def __gera_data_outras_frequencias(detalhes_frequencia: dict):
     unidade = {"Dias": "days", "Semanas": "weeks", "Meses": "months", "Anos": "years"}[
         detalhes_frequencia["unidade"]
     ]
 
     increment = {f"{unidade}": int(detalhes_frequencia["quantidade"])}
 
-    return data_atual + relativedelta(**increment)
+    return TODAY + relativedelta(**increment)
 
 
 __handlers = {
@@ -80,14 +73,5 @@ __handlers = {
 }
 
 
-def gera_data_proxima_despesa(
-    data_despesa_atual: date | str | None, frequencia: str, detalhes_frequencia: dict
-) -> date:
-    if (
-        data_despesa_atual and type(data_despesa_atual) is str
-    ):  # Cenário onde a despesa possui ultima data de pagamento (no dynamoDB), devemos conferir se a mesma não está dentro do periodo solicitado
-        return date(*[int(value) for value in data_despesa_atual.split("-")])
-
-    return __handlers[FrequenciaEnum(frequencia).value](
-        data_despesa_atual, detalhes_frequencia
-    )
+def gera_data_proxima_despesa(frequencia: str, detalhes_frequencia: dict) -> date:
+    return __handlers[FrequenciaEnum(frequencia).value](detalhes_frequencia)

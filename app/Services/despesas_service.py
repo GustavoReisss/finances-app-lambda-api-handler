@@ -53,7 +53,6 @@ class DespesasService(GenericService):
             return TODAY.strftime("%Y-%m-%d")
 
         return gera_data_proxima_despesa(
-            data_despesa_atual=None,
             frequencia=frequencia,
             detalhes_frequencia=body.get("detalhesFrequencia"),
         ).strftime("%Y-%m-%d")
