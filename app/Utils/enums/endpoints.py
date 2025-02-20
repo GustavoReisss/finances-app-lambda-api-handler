@@ -1,9 +1,11 @@
-from enum import Enum, auto
+from enum import Enum
 
 
 class EndpointsEnum(Enum):
     TIPOS_PAGAMENTOS = "tipos_pagamentos"
     DESPESAS = "despesas"
+    ATIVOS = "ativos"
+    EXTRATO_DESPESAS = "extrato_despesas"
 
 
 if __name__ == "__main__":

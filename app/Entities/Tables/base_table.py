@@ -1,8 +1,14 @@
 from pydantic import BaseModel
 from ..Models.base_table_model import TableModel
 
-class Table(BaseModel):
-    partition_key: str
+
+class TableIndex(BaseModel):
     name: str
+    partition_key: str
+    sort_key: str = ""
+
+
+class Table(TableIndex):
     model: TableModel
-    sort_key: str = ''
+
+    secondary_indexes: dict[str, TableIndex] = {}

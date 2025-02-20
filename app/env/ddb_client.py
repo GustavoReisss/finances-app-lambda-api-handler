@@ -7,6 +7,7 @@ env = os.getenv("ENV", "dev")
 
 
 def setup_dynamodb_client():
+    print(env)
     global __ddb_client
 
     params = {"region_name": "sa-east-1"}

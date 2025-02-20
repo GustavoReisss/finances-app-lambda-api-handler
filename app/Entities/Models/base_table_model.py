@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 
+
 class TableModel(BaseModel):
     """
     Base DynamoDB Table Interface.
@@ -7,6 +8,6 @@ class TableModel(BaseModel):
     """
 
     model_config = ConfigDict(
-        extra='allow',
+        extra="allow",
         coerce_numbers_to_str=True,
     )
